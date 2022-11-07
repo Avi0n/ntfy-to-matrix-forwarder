@@ -44,8 +44,9 @@ async def send_message(message):
 
 
 async def main():
+    ntfy_server = config["ntfy_server"]
     ntfy_topic = config["ntfy_topic"]
-    resp = requests.get(f"https://ntfy.sh/{ntfy_topic}/raw", stream=True)
+    resp = requests.get(f"https://{ntfy_server}/{ntfy_topic}/raw", stream=True)
     for line in resp.iter_lines():
         if line:
             print(line.decode("utf-8"))
