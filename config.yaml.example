@@ -1,4 +1,5 @@
 homeserver: https://matrix.org
-username: @user:matrix.org
+username: "@user:matrix.org"
 password: hunter2
+matrix_room: "!matrix_room_address:matrix.org"
 ntfy_topic: disk-alerts
