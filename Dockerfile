@@ -1,7 +1,7 @@
 # To build the image, run `docker build` command from the root of the
 # repository:
 #
-#    docker build -f docker/Dockerfile .
+#    docker build -f Dockerfile .
 #
 
 ##

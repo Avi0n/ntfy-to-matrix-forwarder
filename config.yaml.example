@@ -1,6 +1,10 @@
-homeserver: https://matrix.org
+homeserver: "https://matrix.org"
 username: "@user:matrix.org"
-password: hunter2
+password: "hunter2"
 matrix_room: "!matrix_room_address:matrix.org"
-ntfy_server: ntfy.sh
-ntfy_topic: disk-alerts
+
+ntfy_server: "ntfy.sh"
+ntfy_topic: "disk-alerts"
+
+markdown_forman: True
+logging_level: INFO
