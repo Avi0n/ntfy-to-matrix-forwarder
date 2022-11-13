@@ -1,10 +1,13 @@
-import logging
 import asyncio
-import yaml
-from nio import AsyncClient
-import requests
-from markdown import markdown
 import json
+import logging
+from time import sleep
+
+import requests
+import yaml
+from markdown import markdown
+from nio import AsyncClient
+
 
 
 with open("config.yaml", "r") as yamlfile:
@@ -61,17 +64,27 @@ async def main():
     resp = requests.get(f"https://{ntfy_server}/{ntfy_topic}/json", stream=True)
     logging.info(f"Listening to ntfy topic: {ntfy_topic}")
 
-    for line in resp.iter_lines():
-        if line:
-            # Convert to JSON
-            json_msg = json.loads(line)
+    while True:
+        try:
+            for line in resp.iter_lines():
+                if line:
+                    # Convert to JSON
+                    json_msg = json.loads(line)
 
-            if "message" in json_msg:
-                logging.info(f"Received message from ntfy: {json.dumps(json_msg, indent=4)}")
-                logging.info("Sending message to matrix room...")
-                await send_message(json_msg["message"])
+                    if "message" in json_msg:
+                        logging.info(f"Received message from ntfy: {json.dumps(json_msg, indent=4)}")
+                        logging.info("Sending message to matrix room...")
+                        await send_message(json_msg["message"])
+                    else:
+                        logging.debug(json.dumps(json_msg, indent=4))
+        except Exception as e:
+            if "Connection broken" in e:
+                logger.warning("Unable to connect to ntfy server, retrying in 15s...")
+                # Sleep so we don't bombard the server with requests while it's down
+                sleep(15)
             else:
-                logging.debug(json.dumps(json_msg, indent=4))
+                logging.warning(f"Something happened that I don't know how to handle: {e}")
+                return False
 
 
 if __name__ == "__main__":
