@@ -4,7 +4,7 @@ import yaml
 from nio import AsyncClient
 import requests
 from markdown import markdown
-import re
+import json
 
 
 with open("config.yaml", "r") as yamlfile:
@@ -21,8 +21,8 @@ async def send_message(message):
 
     # Format message as markdown if configured to do so
     if config["markdown_format"]:
-        # Replace two or more spaces with return carriage
-        message = re.sub(r"[ ]{2,}", "\r\r", message)
+        # Replace \n with \r for markdown compatibility
+        message = message.replace("\n", "\r")
 
         content = {
             "msgtype": "m.text",
@@ -49,7 +49,7 @@ async def send_message(message):
         logging.info("Message sent successfully.")
     except Exception as e:
         logging.error(f"Exception while attempting to send message: {e}")
-        logging.info(f"Matrix message content was: {content}")
+        logging.error(f"Matrix message content was: {content}")
 
     await client.close()
     return
@@ -58,14 +58,20 @@ async def send_message(message):
 async def main():
     ntfy_server = config["ntfy_server"]
     ntfy_topic = config["ntfy_topic"]
-    resp = requests.get(f"https://{ntfy_server}/{ntfy_topic}/raw", stream=True)
+    resp = requests.get(f"https://{ntfy_server}/{ntfy_topic}/json", stream=True)
     logging.info(f"Listening to ntfy topic: {ntfy_topic}")
 
     for line in resp.iter_lines():
         if line:
-            logging.info(f"Received message from ntfy: {line.decode('utf-8')}")
-            logging.info("Sending message to matrix room...")
-            await send_message(line.decode("utf-8"))
+            # Convert to JSON
+            json_msg = json.loads(line)
+
+            if "message" in json_msg:
+                logging.info(f"Received message from ntfy: {json.dumps(json_msg, indent=4)}")
+                logging.info("Sending message to matrix room...")
+                await send_message(json_msg["message"])
+            else:
+                logging.debug(json.dumps(json_msg, indent=4))
 
 
 if __name__ == "__main__":
