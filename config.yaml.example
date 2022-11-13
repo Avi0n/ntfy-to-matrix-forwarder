@@ -6,5 +6,5 @@ matrix_room: "!matrix_room_address:matrix.org"
 ntfy_server: "ntfy.sh"
 ntfy_topic: "disk-alerts"
 
-markdown_forman: True
+markdown_format: True
 logging_level: INFO
